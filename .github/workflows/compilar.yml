@@ -1,0 +1,94 @@
+# Compila las apps de Android cada vez que se sube un cambio y publica los APK en "Releases".
+name: Compilar apps
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: compilar
+  cancel-in-progress: true
+
+jobs:
+  compilar:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [finanzas, habitos]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Compilar ${{ matrix.app }}
+        shell: bash
+        run: |
+          set -o pipefail
+          cd "${{ matrix.app }}"
+          gradle assembleRelease --no-daemon --stacktrace 2>&1 | tee ../registro-${{ matrix.app }}.txt
+
+      - name: Preparar APK
+        run: |
+          mkdir -p salida
+          cp ${{ matrix.app }}/app/build/outputs/apk/release/*.apk salida/${{ matrix.app }}.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk-${{ matrix.app }}
+          path: salida/${{ matrix.app }}.apk
+
+      # Si falla, guarda el error en la rama "registros" para poder revisarlo
+      - name: Guardar registro del error
+        if: failure()
+        shell: bash
+        run: |
+          git config user.name "compilador"
+          git config user.email "compilador@users.noreply.github.com"
+          cp "registro-${{ matrix.app }}.txt" /tmp/registro.txt || echo "sin registro" > /tmp/registro.txt
+          tail -c 200000 /tmp/registro.txt > /tmp/registro_corto.txt
+          git fetch origin registros || true
+          if git rev-parse --verify origin/registros >/dev/null 2>&1; then
+            git checkout -B registros origin/registros
+          else
+            git checkout --orphan registros
+            git rm -rf . >/dev/null 2>&1 || true
+          fi
+          cp /tmp/registro_corto.txt "error-${{ matrix.app }}.txt"
+          echo "${{ github.sha }}" > "commit-${{ matrix.app }}.txt"
+          git add "error-${{ matrix.app }}.txt" "commit-${{ matrix.app }}.txt"
+          git commit -m "Error al compilar ${{ matrix.app }}" || true
+          for i in 1 2 3; do git push origin registros && break; git pull --rebase origin registros || true; done
+
+  publicar:
+    needs: compilar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: apks
+          merge-multiple: true
+
+      - name: Publicar en Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Mis Apps v${{ github.run_number }}
+          make_latest: true
+          body: |
+            Descarga el APK desde tu celular y ábrelo para instalarlo.
+            - finanzas.apk = Mis Finanzas
+            - habitos.apk = Mis Hábitos
+            Si tu celular pregunta, permite "instalar apps de origen desconocido".
+          files: apks/*.apk
