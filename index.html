@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="Anota lo que gastas y lo que ganas, y mira a dónde se va tu dinero.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Mis Finanzas">
+<title>Mis Finanzas</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --negro:#000; --panel:#0e0e0e; --panel-2:#181818; --linea:#2a2a2a; --linea-2:#1c1c1c;
+    --texto:#f5f5f2; --texto-2:#bdbdb7; --suave:#8a8a84;
+    --ingreso:#3987e5; --gasto:#d95926; --peligro:#ff6b6b; --ok:#3ddc97; --aviso:#ffd23f;
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+    --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --abajo:env(safe-area-inset-bottom,0px); --arriba:env(safe-area-inset-top,0px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--negro);color:var(--texto)}
+  body{font-family:var(--sans);font-size:17px;line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100vh}
+  button,input,select{font:inherit;color:inherit}
+  button{cursor:pointer;border:0;background:none}
+  :focus-visible{outline:2px solid var(--texto);outline-offset:2px}
+  .num{font-variant-numeric:tabular-nums lining-nums}
+  .oculto{display:none!important}
+  .serif{font-family:var(--serif);font-weight:400}
+
+  /* ---------- botones ---------- */
+  .btn{display:block;width:100%;padding:17px 18px;border-radius:14px;background:var(--texto);color:var(--negro);font-weight:700;font-size:18px;text-align:center}
+  .btn:disabled{background:var(--panel-2);color:var(--suave)}
+  .btn.linea{background:transparent;color:var(--texto);border:1.5px solid var(--linea)}
+  .btn.gasto{background:var(--gasto);color:#fff}
+  .btn.ingreso{background:var(--ingreso);color:#fff}
+  .btn:active{transform:scale(.985)}
+  .link{color:var(--texto-2);text-decoration:underline;text-underline-offset:3px;padding:10px;font-size:16px}
+  input,select{width:100%;background:var(--panel);border:1.5px solid var(--linea);border-radius:12px;padding:15px 16px;font-size:18px;color-scheme:dark}
+  input:focus{outline:none;border-color:var(--texto-2)}
+  label.titulo{display:block;font-size:15px;color:var(--texto-2);margin:20px 0 8px;font-weight:600}
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{padding:11px 16px;border-radius:99px;border:1.5px solid var(--linea);background:var(--panel);font-size:16px;font-weight:500;color:var(--texto-2)}
+  .chip.on{color:#fff;border-color:transparent;background:var(--c,var(--texto))}
+  .chip.on.neutro{color:var(--negro)}
+
+  /* ---------- bienvenida ---------- */
+  .pantalla{min-height:100vh;display:flex;flex-direction:column;padding:calc(24px + var(--arriba)) 22px calc(22px + var(--abajo))}
+  .pantalla .cuerpo{flex:1;padding-bottom:20px}
+  .avance{display:flex;gap:6px;margin-bottom:30px}
+  .avance i{height:5px;width:16px;border-radius:9px;background:var(--linea)}
+  .avance i.on{background:var(--texto)}
+  .avance i.actual{width:32px}
+  .logo{width:84px;height:84px;border-radius:22px;background:var(--panel);border:1px solid var(--linea);display:grid;place-items:center;font-family:var(--serif);font-size:48px;margin:40px 0 28px}
+  h1.grande{font-family:var(--serif);font-weight:400;font-size:40px;line-height:1.05;letter-spacing:-.01em;margin-bottom:14px}
+  h2.paso{font-family:var(--serif);font-weight:400;font-size:31px;line-height:1.15;margin-bottom:8px}
+  p.sub{color:var(--texto-2);font-size:17px;margin-bottom:24px}
+  .opcion{display:flex;justify-content:space-between;align-items:center;width:100%;padding:16px;border-radius:12px;border:1.5px solid var(--linea);background:var(--panel);margin-bottom:9px;font-size:17px;text-align:left}
+  .opcion small{color:var(--suave);font-size:15px}
+  .opcion.on{border-color:var(--texto);background:var(--panel-2)}
+  .agregar-cat{display:flex;gap:8px;margin-top:12px}
+  .agregar-cat input{flex:1;padding:12px 14px;font-size:16px}
+  .agregar-cat button{padding:0 16px;border-radius:12px;border:1.5px solid var(--linea);font-weight:600}
+
+  /* ---------- app ---------- */
+  .app{max-width:640px;margin:auto;padding:calc(18px + var(--arriba)) 18px calc(120px + var(--abajo))}
+  .banner{display:flex;align-items:center;gap:12px;background:var(--panel-2);border:1px solid var(--linea);border-radius:14px;padding:12px 14px;margin-bottom:16px;width:100%;text-align:left}
+  .banner b{display:block;font-size:16px}
+  .banner span{color:var(--texto-2);font-size:14px}
+  .banner .emoji{font-size:26px}
+  header.saldo{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
+  header.saldo small{display:block;color:var(--suave);font-size:15px}
+  header.saldo .hola{font-family:var(--serif);font-size:24px;margin-bottom:12px}
+  header.saldo .cifra{font-family:var(--serif);font-size:46px;line-height:1;letter-spacing:-.02em}
+  header.saldo .cifra sup{font-size:.45em;vertical-align:.9em;color:var(--texto-2);margin-right:2px}
+  .engrane{width:46px;height:46px;border-radius:50%;border:1.5px solid var(--linea);display:grid;place-items:center;font-size:22px;flex:none}
+  .tabs{display:flex;border-bottom:1px solid var(--linea);margin:22px 0 14px;position:sticky;top:0;background:var(--negro);z-index:5;padding-top:var(--arriba)}
+  .tabs button{flex:1;padding:14px 4px;font-size:16px;font-weight:600;color:var(--suave);position:relative}
+  .tabs button.on{color:var(--texto)}
+  .tabs button.on::after{content:"";position:absolute;left:18%;right:18%;bottom:-1px;height:3px;border-radius:3px 3px 0 0;background:var(--c,var(--texto))}
+  .periodos{display:flex;gap:8px;overflow-x:auto;margin-bottom:18px;scrollbar-width:none}
+  .periodos button{padding:9px 15px;border-radius:99px;border:1.5px solid var(--linea);font-size:15px;font-weight:600;color:var(--texto-2);white-space:nowrap}
+  .periodos button.on{background:var(--texto);color:var(--negro);border-color:var(--texto)}
+  .bloque{background:var(--panel);border:1px solid var(--linea);border-radius:16px;padding:18px;margin-bottom:16px}
+  .bloque h3{font-family:var(--serif);font-weight:400;font-size:21px;margin-bottom:2px}
+  .bloque .nota{color:var(--suave);font-size:14px;margin-bottom:12px}
+  .libro{width:100%;border-collapse:collapse;font-size:17px}
+  .libro td{padding:11px 0;border-bottom:1px solid var(--linea-2)}
+  .libro td:last-child{text-align:right}
+  .libro .c{color:var(--texto-2)}
+  .libro .m{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:9px}
+  .libro .cierre td{border:0;border-top:1.5px solid var(--texto-2);padding-top:14px;font-weight:600}
+  .libro .cierre td:last-child{font-family:var(--serif);font-size:28px;font-weight:400}
+  .resultado{margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--panel-2);font-size:16px;color:var(--texto-2)}
+  .resultado b{color:var(--texto)}
+  .grafica svg{display:block;width:100%;overflow:visible}
+  .leyenda{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--texto-2);margin-top:10px}
+  .leyenda i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+  .cat{margin-bottom:13px}
+  .cat .f{display:flex;justify-content:space-between;font-size:16px;margin-bottom:6px}
+  .cat .f span:last-child{color:var(--texto-2)}
+  .cat .b{height:8px;border-radius:9px;background:var(--panel-2);overflow:hidden}
+  .cat .b div{height:100%;border-radius:9px}
+  .vacio{color:var(--suave);text-align:center;padding:26px 10px;font-size:16px}
+  .mov{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px 4px;border-bottom:1px solid var(--linea-2)}
+  .mov .i{flex:1;min-width:0}
+  .mov .i b{display:block;font-weight:500;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mov .i span{color:var(--suave);font-size:14px}
+  .mov .m{font-weight:600;font-size:18px;white-space:nowrap}
+  .mov .m.g::before{content:"−";color:var(--gasto);margin-right:3px}
+  .mov .m.n::before{content:"+";color:var(--ingreso);margin-right:3px}
+  .total{display:flex;justify-content:space-between;padding:16px 4px 4px;font-weight:700;font-size:18px}
+  .dia{font-size:14px;color:var(--suave);font-weight:600;margin:16px 4px 2px}
+
+  /* barra de abajo con los dos botones grandes */
+  .acciones{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(14px + var(--abajo));background:linear-gradient(transparent,var(--negro) 30%);display:flex;gap:10px;justify-content:center;z-index:10}
+  .acciones .btn{max-width:300px;padding:16px 10px;font-size:18px}
+
+  /* ---------- hojas (agregar / ajustes) ---------- */
+  .fondo-hoja{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:30;display:flex;align-items:flex-end;justify-content:center;animation:aparece .2s}
+  .hoja{width:100%;max-width:640px;max-height:94vh;overflow-y:auto;background:var(--panel);border:1px solid var(--linea);border-bottom:0;border-radius:22px 22px 0 0;padding:10px 20px calc(22px + var(--abajo));animation:sube .25s ease-out}
+  .hoja.completa{max-height:100vh;height:100vh;border-radius:0;padding-top:calc(14px + var(--arriba))}
+  .asa{width:44px;height:5px;border-radius:9px;background:var(--linea);margin:4px auto 14px}
+  .hoja-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .hoja-top h2{font-family:var(--serif);font-weight:400;font-size:28px}
+  .cerrar{width:44px;height:44px;border-radius:50%;background:var(--panel-2);font-size:22px;display:grid;place-items:center}
+  .tipo{display:flex;background:var(--panel-2);border-radius:12px;padding:4px;margin:6px 0 16px}
+  .tipo button{flex:1;padding:12px;border-radius:9px;font-weight:700;font-size:17px;color:var(--suave)}
+  .tipo button.on{background:var(--c);color:#fff}
+  .monto-grande{display:flex;align-items:center;border-bottom:2px solid var(--linea);padding:6px 0;margin-bottom:6px}
+  .monto-grande span{font-family:var(--serif);font-size:40px;color:var(--texto-2);margin-right:6px}
+  .monto-grande input{border:0;background:none;font-family:var(--serif);font-size:48px;padding:0;width:100%}
+  .monto-grande input:focus{outline:none}
+  @keyframes aparece{from{opacity:0}}
+  @keyframes sube{from{transform:translateY(40px);opacity:.5}}
+
+  .aviso{position:fixed;left:50%;bottom:calc(100px + var(--abajo));transform:translate(-50%,30px);opacity:0;background:var(--texto);color:var(--negro);padding:12px 18px;border-radius:12px;font-weight:600;font-size:16px;transition:.25s;z-index:60;pointer-events:none;max-width:90%;text-align:center}
+  .aviso.ver{transform:translate(-50%,0);opacity:1}
+
+  /* ---------- tutorial para crear el acceso directo ---------- */
+  .tuto{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.86);display:flex;flex-direction:column;justify-content:flex-end;padding:0 16px calc(18px + var(--abajo));animation:aparece .25s}
+  .tuto.arriba-card{justify-content:center}
+  .tuto .tarjeta{background:#fff;color:#111;border-radius:22px;padding:22px 20px 18px;max-width:520px;width:100%;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  .tuto .pasito{font-size:14px;font-weight:700;color:#6b6b6b;margin-bottom:6px}
+  .tuto h2{font-size:25px;line-height:1.2;margin-bottom:10px;font-weight:700}
+  .tuto p{font-size:18px;color:#333;margin-bottom:14px;line-height:1.45}
+  .tuto .btn{background:#111;color:#fff}
+  .tuto .btn.amarillo{background:var(--aviso);color:#111}
+  .tuto .btn.linea{border-color:#ddd;color:#333;background:#fff}
+  .tuto .fila-btn{display:flex;gap:10px;margin-top:6px}
+  .tuto .fila-btn .btn{flex:1}
+  .tuto .saltar{display:block;margin:10px auto 0;color:#777;font-size:15px;padding:8px}
+  .tecla{display:inline-grid;place-items:center;min-width:34px;height:34px;padding:0 6px;border-radius:9px;background:#eee;border:1px solid #ccc;font-weight:800;font-size:20px;vertical-align:middle;margin:0 2px}
+  /* la flecha que señala el botón del navegador */
+  .flecha{position:fixed;z-index:51;font-size:64px;line-height:1;color:var(--aviso);text-shadow:0 0 18px rgba(255,210,63,.6);pointer-events:none}
+  .flecha.arriba-der{top:calc(30px + var(--arriba));right:10px;font-size:76px;animation:rebota-arriba 1s ease-in-out infinite}
+  .letrero{position:fixed;z-index:51;background:var(--aviso);color:#111;font-weight:800;font-size:18px;padding:6px 12px;border-radius:10px;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+  .letrero.arriba-der{top:calc(112px + var(--arriba));right:12px}
+  .letrero.abajo-der{bottom:calc(140px + var(--abajo));right:12px}
+  .letrero.abajo-centro{bottom:calc(140px + var(--abajo));left:50%;transform:translateX(-50%)}
+  .flecha.abajo-der{bottom:calc(66px + var(--abajo));right:14px;animation:rebota-abajo 1s ease-in-out infinite}
+  .flecha.abajo-centro{bottom:calc(64px + var(--abajo));left:50%;margin-left:-24px;animation:rebota-abajo 1s ease-in-out infinite}
+  .circulo{position:fixed;z-index:51;width:62px;height:62px;border-radius:50%;border:4px solid var(--aviso);pointer-events:none;animation:pulso 1.2s ease-out infinite}
+  .circulo.arriba-der{top:calc(-20px + var(--arriba));right:-16px;width:76px;height:76px}
+  .circulo.abajo-der{bottom:calc(-8px + var(--abajo));right:-6px}
+  .circulo.abajo-centro{bottom:calc(-10px + var(--abajo));left:50%;margin-left:-31px}
+  @keyframes rebota-arriba{50%{transform:translateY(-12px)}}
+  @keyframes rebota-abajo{50%{transform:translateY(12px)}}
+  @keyframes pulso{0%{transform:scale(.7);opacity:1}100%{transform:scale(1.4);opacity:0}}
+  @media (prefers-reduced-motion:reduce){.flecha,.circulo{animation:none}}
+  /* dibujos de cómo se ve el menú del celular */
+  .dibujo{background:#f3f3f3;border-radius:14px;padding:12px;margin-bottom:14px;border:1px solid #e3e3e3}
+  .menu-falso{background:#fff;border-radius:12px;box-shadow:0 4px 18px rgba(0,0,0,.15);overflow:hidden;font-size:16px}
+  .menu-falso div{padding:11px 14px;color:#444;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:10px}
+  .menu-falso div:last-child{border-bottom:0}
+  .menu-falso .marca{background:#fff7d1;color:#111;font-weight:800;box-shadow:inset 0 0 0 3px var(--aviso)}
+  .menu-falso .marca::after{content:"👈";margin-left:auto;font-size:22px}
+  .dialogo-falso{background:#fff;border-radius:14px;padding:16px;box-shadow:0 4px 18px rgba(0,0,0,.15)}
+  .dialogo-falso .t{font-weight:700;font-size:17px;margin-bottom:12px;color:#111;display:flex;align-items:center;gap:10px}
+  .dialogo-falso .t img{width:36px;height:36px;border-radius:8px}
+  .dialogo-falso .bs{display:flex;justify-content:flex-end;gap:14px;font-weight:700}
+  .dialogo-falso .bs span{padding:8px 12px;border-radius:9px;color:#1a73e8}
+  .dialogo-falso .bs .marca{background:#fff7d1;box-shadow:inset 0 0 0 3px var(--aviso);color:#111}
+  .icono-final{display:flex;flex-direction:column;align-items:center;gap:6px;margin:6px 0 16px;color:#333;font-size:14px;font-weight:600}
+  .icono-final img{width:70px;height:70px;border-radius:17px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+</style>
+</head>
+<body>
+<div id="raiz"></div>
+<div class="aviso" id="aviso" role="status"></div>
+
+<script>
+/* =====================================================================
+   MIS FINANZAS (web). Todo se guarda en el celular de cada persona.
+   ===================================================================== */
+const CLAVE = "misFinanzas.v1";
+const MONEDAS = [
+  ["MXN", "$", "Peso mexicano"], ["USD", "US$", "Dólar"], ["EUR", "€", "Euro"], ["COP", "COL$", "Peso colombiano"],
+  ["ARS", "AR$", "Peso argentino"], ["CLP", "CLP$", "Peso chileno"], ["PEN", "S/", "Sol peruano"], ["GTQ", "Q", "Quetzal"],
+];
+const SUG_GASTO = ["Comida", "Súper", "Transporte", "Casa", "Luz y agua", "Teléfono", "Salud", "Ropa", "Escuela", "Diversión", "Regalos", "Otros"];
+const SUG_INGRESO = ["Sueldo", "Pensión", "Ventas", "Mesada", "Trabajos extra", "Regalo", "Otros"];
+const INI_GASTO = ["Comida", "Súper", "Transporte", "Casa", "Salud", "Otros"];
+const INI_INGRESO = ["Sueldo", "Ventas", "Regalo", "Otros"];
+const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+/* ---------------- datos ---------------- */
+function nuevo() {
+  return { perfil: null, movs: [], tutorial: { visto: false, instalada: false } };
+}
+function cargar() {
+  try {
+    const d = JSON.parse(localStorage.getItem(CLAVE));
+    if (d && Array.isArray(d.movs)) return Object.assign(nuevo(), d);
+  } catch (e) {}
+  return nuevo();
+}
+let db = cargar();
+function guardar() {
+  try { localStorage.setItem(CLAVE, JSON.stringify(db)); }
+  catch (e) { aviso("No se pudo guardar. Revisa el espacio de tu celular."); }
+}
+// Pide al navegador no borrar los datos
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+/* ---------------- formatos ---------------- */
+const moneda = () => MONEDAS.find((m) => m[0] === db.perfil?.moneda) || MONEDAS[0];
+const fmt = new Intl.NumberFormat("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmt0 = new Intl.NumberFormat("es-MX", { maximumFractionDigits: 0 });
+const r2 = (n) => Math.round(n * 100) / 100;
+function dinero(n, signo) {
+  const a = Math.abs(n), s = n < 0 ? "−" : signo && n > 0 ? "+" : "";
+  return s + moneda()[1] + (Number.isInteger(r2(a)) ? fmt0.format(a) : fmt.format(a));
+}
+const hoyISO = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+const fechaCorta = (iso) => { const d = new Date(iso); return `${d.getDate()} ${MESES[d.getMonth()]}`; };
+function nombreDia(iso) {
+  const d = new Date(iso), hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const x = new Date(d); x.setHours(0, 0, 0, 0);
+  const dif = Math.round((hoy - x) / 864e5);
+  if (dif === 0) return "Hoy";
+  if (dif === 1) return "Ayer";
+  return `${DIAS[d.getDay()].replace(/^./, (c) => c.toUpperCase())} ${d.getDate()} de ${MESES[d.getMonth()]}`;
+}
+function aviso(t) { const a = $("#aviso"); a.textContent = t; a.classList.add("ver"); clearTimeout(a._t); a._t = setTimeout(() => a.classList.remove("ver"), 2200); }
+
+/* ---------------- cálculos ---------------- */
+const PERIODOS = [["hoy", "Hoy"], ["semana", "Esta semana"], ["mes", "Este mes"], ["todo", "Todo"]];
+function inicioPeriodo(p) {
+  const d = new Date(); d.setHours(0, 0, 0, 0);
+  if (p === "hoy") return d;
+  if (p === "semana") { d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d; }
+  if (p === "mes") { d.setDate(1); return d; }
+  return null;
+}
+const signo = (m) => (m.tipo === "ingreso" ? m.monto : -m.monto);
+function resumen(p) {
+  const ini = inicioPeriodo(p);
+  const todos = [...db.movs].sort((a, b) => (a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : 0));
+  const antes = ini ? todos.filter((m) => new Date(m.fecha) < ini) : [];
+  const dentro = ini ? todos.filter((m) => new Date(m.fecha) >= ini) : todos;
+  let saldo = antes.reduce((s, m) => s + signo(m), 0);
+  const inicial = r2(saldo);
+  const serie = dentro.map((m) => { saldo += signo(m); return { ...m, saldo: r2(saldo) }; });
+  const porCat = (tipo) => {
+    const o = {};
+    dentro.filter((m) => m.tipo === tipo).forEach((m) => (o[m.categoria] = r2((o[m.categoria] || 0) + m.monto)));
+    return Object.entries(o).sort((a, b) => b[1] - a[1]);
+  };
+  const g = dentro.filter((m) => m.tipo === "gasto"), i = dentro.filter((m) => m.tipo === "ingreso");
+  return {
+    inicial, final: r2(saldo), serie, dentro,
+    gastos: r2(g.reduce((s, m) => s + m.monto, 0)), ingresos: r2(i.reduce((s, m) => s + m.monto, 0)),
+    nG: g.length, nI: i.length, catG: porCat("gasto"), catI: porCat("ingreso"),
+    total: r2(todos.reduce((s, m) => s + signo(m), 0)),
+  };
+}
+
+/* =====================================================================
+   BIENVENIDA (primera vez)
+   ===================================================================== */
+const conf = { paso: 0, nombre: "", moneda: "MXN", saldo: "", gastos: [...INI_GASTO], ingresos: [...INI_INGRESO] };
+
+function chipsCategorias(sug, elegidas, color, clave) {
+  const todas = [...new Set([...sug, ...elegidas])];
+  return `<div class="chips">${todas.map((c) => `<button class="chip ${elegidas.includes(c) ? "on" : ""}" style="--c:${color}" data-cat="${esc(c)}" data-lista="${clave}">${esc(c)}</button>`).join("")}</div>
+    <div class="agregar-cat"><input placeholder="Otra categoría…" maxlength="20" data-nueva="${clave}"><button data-agregar="${clave}">Agregar</button></div>`;
+}
+
+function pintarBienvenida() {
+  const p = conf.paso;
+  const avance = p ? `<div class="avance">${[1, 2, 3].map((i) => `<i class="${i <= p ? "on" : ""} ${i === p ? "actual" : ""}"></i>`).join("")}</div>` : "";
+  let cuerpo = "", boton = "", puede = true;
+  if (p === 0) {
+    cuerpo = `<div class="logo">$</div>
+      <h1 class="grande">Mis Finanzas</h1>
+      <p class="sub">Anota lo que gastas y lo que ganas, y mira a dónde se va tu dinero.<br><br>Es gratis y todo se guarda solo en tu celular.</p>`;
+    boton = "Empezar";
+  } else if (p === 1) {
+    cuerpo = `<h2 class="paso">¿Cómo te llamas?</h2><p class="sub">Así te saluda la app.</p>
+      <input id="nombre" placeholder="Tu nombre" maxlength="30" autocomplete="given-name" value="${esc(conf.nombre)}">`;
+    puede = conf.nombre.trim().length > 0; boton = "Siguiente";
+  } else if (p === 2) {
+    cuerpo = `<h2 class="paso">¿Qué moneda usas?</h2><p class="sub">Puedes cambiarla después.</p>
+      ${MONEDAS.map((m) => `<button class="opcion ${m[0] === conf.moneda ? "on" : ""}" data-moneda="${m[0]}"><span>${m[2]}</span><small>${m[0]} ${m[1]}</small></button>`).join("")}
+      <label class="titulo" for="saldo">¿Cuánto dinero tienes ahorita? (si no sabes, déjalo vacío)</label>
+      <input id="saldo" inputmode="decimal" placeholder="0" value="${esc(conf.saldo)}">`;
+    boton = "Siguiente";
+  } else {
+    cuerpo = `<h2 class="paso">Elige tus categorías</h2><p class="sub">Toca para poner o quitar. Puedes agregar las tuyas.</p>
+      <label class="titulo">¿En qué gastas?</label>${chipsCategorias(SUG_GASTO, conf.gastos, "var(--gasto)", "gastos")}
+      <label class="titulo">¿De dónde te llega dinero?</label>${chipsCategorias(SUG_INGRESO, conf.ingresos, "var(--ingreso)", "ingresos")}`;
+    puede = conf.gastos.length > 0 && conf.ingresos.length > 0;
+    boton = `Listo, ${esc(conf.nombre.trim().split(" ")[0])}`;
+  }
+  $("#raiz").innerHTML = `<div class="pantalla">${avance}<div class="cuerpo">${cuerpo}</div>
+    <button class="btn" id="seguir" ${puede ? "" : "disabled"}>${boton}</button>
+    ${p > 0 ? `<button class="link" id="atras" style="margin:8px auto 0;display:block">Atrás</button>` : ""}</div>`;
+  const n = $("#nombre");
+  if (n) {
+    n.focus();
+    n.oninput = () => { conf.nombre = n.value; $("#seguir").disabled = !n.value.trim(); };
+    n.onkeydown = (e) => { if (e.key === "Enter" && n.value.trim()) { conf.paso++; pintarBienvenida(); } };
+  }
+  const s = $("#saldo"); if (s) s.oninput = () => (conf.saldo = s.value);
+}
+
+function terminarBienvenida() {
+  db.perfil = { nombre: conf.nombre.trim(), moneda: conf.moneda, catGasto: conf.gastos, catIngreso: conf.ingresos };
+  const saldo = parseFloat(String(conf.saldo).replace(/,/g, ""));
+  if (saldo > 0) db.movs.push({ id: Date.now().toString(36), tipo: "ingreso", monto: r2(saldo), categoria: "Otros", descripcion: "Lo que tenía al empezar", fecha: new Date().toISOString() });
+  guardar();
+  pintarApp();
+  if (!estaInstalada()) setTimeout(() => abrirTutorial(), 500);
+}
+
+/* =====================================================================
+   APP
+   ===================================================================== */
+const ui = { tab: "resumen", periodo: "mes" };
+
+function pintarApp() {
+  const r = resumen(ui.periodo), m = moneda();
+  const nombre = esc(db.perfil.nombre.split(" ")[0]);
+  const banner = !estaInstalada() && !db.tutorial.instalada
+    ? `<button class="banner" data-accion="tutorial"><span class="emoji">📲</span><div><b>Ponla en tu pantalla de inicio</b><span>Así la abres como cualquier app. Toca aquí y te enseño.</span></div></button>` : "";
+  let contenido = "";
+  if (ui.tab === "resumen") contenido = vistaResumen(r);
+  else contenido = vistaLista(ui.tab, r);
+  $("#raiz").innerHTML = `<div class="app">
+    ${banner}
+    <header class="saldo">
+      <div><div class="hola">Hola, ${nombre}</div><small>Tienes</small>
+        <div class="cifra num">${r.total < 0 ? "−" : ""}<sup>${esc(m[1])}</sup>${fmt.format(Math.abs(r.total))}</div></div>
+      <button class="engrane" data-accion="ajustes" aria-label="Ajustes">⚙️</button>
+    </header>
+    <nav class="tabs">
+      <button data-tab="resumen" class="${ui.tab === "resumen" ? "on" : ""}">Resumen</button>
+      <button data-tab="gasto" class="${ui.tab === "gasto" ? "on" : ""}" style="--c:var(--gasto)">Gastos</button>
+      <button data-tab="ingreso" class="${ui.tab === "ingreso" ? "on" : ""}" style="--c:var(--ingreso)">Ganancias</button>
+    </nav>
+    <div class="periodos">${PERIODOS.map(([k, t]) => `<button data-periodo="${k}" class="${ui.periodo === k ? "on" : ""}">${t}</button>`).join("")}</div>
+    ${contenido}
+  </div>
+  <div class="acciones">
+    <button class="btn gasto" data-agregar-tipo="gasto">− Gasté</button>
+    <button class="btn ingreso" data-agregar-tipo="ingreso">+ Me llegó</button>
+  </div>`;
+}
+
+function vistaResumen(r) {
+  const etiqueta = PERIODOS.find((p) => p[0] === ui.periodo)[1];
+  if (!db.movs.length) {
+    return `<div class="bloque"><h3>Aún no anotas nada</h3><p class="nota" style="margin:8px 0 0;font-size:16px">Cuando gastes, toca <b>“− Gasté”</b>. Cuando te llegue dinero, toca <b>“+ Me llegó”</b>. Están abajo.</p></div>`;
+  }
+  const balance = r2(r.ingresos - r.gastos);
+  return `<div class="bloque">
+      <h3>${etiqueta}</h3><p class="nota">Cómo se movió tu dinero</p>
+      <table class="libro num">
+        <tr><td class="c">Tenías</td><td>${dinero(r.inicial)}</td></tr>
+        <tr><td class="c"><span class="m" style="background:var(--ingreso)"></span>Te llegó</td><td>+${dinero(r.ingresos)}</td></tr>
+        <tr><td class="c"><span class="m" style="background:var(--gasto)"></span>Gastaste</td><td>−${dinero(r.gastos)}</td></tr>
+        <tr class="cierre"><td>Te queda</td><td>${dinero(r.final)}</td></tr>
+      </table>
+      ${r.dentro.length ? `<div class="resultado">${balance >= 0 ? `Vas bien: te sobraron <b>${dinero(balance)}</b>.` : `Ojo: gastaste <b>${dinero(-balance)}</b> más de lo que te llegó.`}</div>` : ""}
+    </div>
+    <div class="bloque"><h3>Tu dinero día a día</h3><p class="nota">Sube cuando te llega dinero y baja cuando gastas</p>${grafica(r)}
+      <div class="leyenda"><span><i style="background:var(--ingreso)"></i>Te llegó</span><span><i style="background:var(--gasto)"></i>Gastaste</span></div></div>
+    <div class="bloque"><h3>¿En qué gastaste?</h3><p class="nota">${etiqueta}</p>${barras(r.catG, "gasto", r.gastos)}</div>
+    <div class="bloque"><h3>¿De dónde te llegó?</h3><p class="nota">${etiqueta}</p>${barras(r.catI, "ingreso", r.ingresos)}</div>`;
+}
+
+function barras(lista, tipo, total) {
+  if (!lista.length) return `<p class="vacio">Nada en este periodo</p>`;
+  const max = lista[0][1];
+  return lista.map(([c, m]) => `<div class="cat"><div class="f"><span>${esc(c)}</span><span class="num">${dinero(m)} · ${Math.round((m / total) * 100)}%</span></div>
+    <div class="b"><div style="width:${(m / max) * 100}%;background:var(--${tipo})"></div></div></div>`).join("");
+}
+
+function grafica(r) {
+  const pts = [{ saldo: r.inicial, tipo: "inicio" }, ...r.serie];
+  if (pts.length < 2) return `<p class="vacio">Nada en este periodo</p>`;
+  const W = 600, H = 300, pl = 92, pr = 10, pt = 14, pb = 40;
+  let lo = Math.min(...pts.map((p) => p.saldo)), hi = Math.max(...pts.map((p) => p.saldo));
+  if (lo === hi) { lo -= 100; hi += 100; }
+  const paso0 = (hi - lo) / 3, mag = 10 ** Math.floor(Math.log10(paso0)), q = paso0 / mag;
+  const paso = (q <= 1 ? 1 : q <= 2 ? 2 : q <= 5 ? 5 : 10) * mag;
+  lo = Math.floor(lo / paso) * paso; hi = Math.ceil(hi / paso) * paso;
+  const marcas = []; for (let v = lo; v <= hi + paso / 1000; v += paso) marcas.push(v);
+  const X = (i) => pl + (i * (W - pl - pr)) / (pts.length - 1), Y = (v) => pt + ((hi - v) * (H - pt - pb)) / (hi - lo);
+  const corto = (v) => { const a = Math.abs(v); return (v < 0 ? "−" : "") + moneda()[1] + (a >= 1000 ? fmt0.format(a / 1000) + "k" : fmt0.format(a)); };
+  const linea = pts.map((p, i) => `${i ? "L" : "M"}${X(i).toFixed(1)},${Y(p.saldo).toFixed(1)}`).join("");
+  const col = (p) => (p.tipo === "ingreso" ? "var(--ingreso)" : p.tipo === "gasto" ? "var(--gasto)" : "var(--suave)");
+  return `<div class="grafica"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Tu saldo en el tiempo">
+    ${marcas.map((v) => `<line x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="${v === 0 ? "#555" : "#222"}" ${v === 0 ? 'stroke-dasharray="4 5"' : ""}/>
+      <text x="${pl - 10}" y="${Y(v) + 8}" text-anchor="end" font-size="24" fill="#8a8a84">${corto(v)}</text>`).join("")}
+    <path d="${linea}" fill="none" stroke="#eee" stroke-width="3.2" stroke-linejoin="round"/>
+    ${pts.length <= 50 ? pts.map((p, i) => `<circle cx="${X(i)}" cy="${Y(p.saldo)}" r="8" fill="${col(p)}" stroke="#0e0e0e" stroke-width="3"/>`).join("") : ""}
+    <text x="${pl}" y="${H - 6}" font-size="24" fill="#8a8a84">${fechaCorta(r.serie[0].fecha)}</text>
+    <text x="${W - pr}" y="${H - 6}" font-size="24" fill="#8a8a84" text-anchor="end">${fechaCorta(r.serie[r.serie.length - 1].fecha)}</text>
+  </svg></div>`;
+}
+
+function vistaLista(tipo, r) {
+  const lista = r.dentro.filter((m) => m.tipo === tipo).sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
+  const titulo = tipo === "gasto" ? "gastos" : "ganancias";
+  if (!lista.length) return `<div class="bloque"><p class="vacio">No hay ${titulo} en este periodo.<br>Toca <b>${tipo === "gasto" ? "“− Gasté”" : "“+ Me llegó”"}</b> abajo para anotar.</p></div>`;
+  let html = "", dia = "";
+  for (const m of lista) {
+    const d = nombreDia(m.fecha);
+    if (d !== dia) { html += `<div class="dia">${d}</div>`; dia = d; }
+    html += `<button class="mov" data-mov="${m.id}"><div class="i"><b>${esc(m.descripcion || m.categoria)}</b><span>${esc(m.categoria)}</span></div>
+      <div class="m num ${tipo === "gasto" ? "g" : "n"}">${dinero(m.monto)}</div></button>`;
+  }
+  const total = r2(lista.reduce((s, m) => s + m.monto, 0));
+  return `<div class="bloque" style="padding:6px 14px 14px">${html}
+    <div class="total"><span>Total (${lista.length})</span><span class="num">${dinero(total)}</span></div></div>
+    <p class="nota" style="color:var(--suave);font-size:14px;text-align:center">Toca un movimiento si lo quieres borrar.</p>`;
+}
+
+/* ---------------- agregar movimiento ---------------- */
+const nuevoMov = { tipo: "gasto", categoria: "" };
+function abrirAgregar(tipo) {
+  nuevoMov.tipo = tipo;
+  const cats = tipo === "gasto" ? db.perfil.catGasto : db.perfil.catIngreso;
+  nuevoMov.categoria = cats[0] || "Otros";
+  pintarAgregar();
+}
+function pintarAgregar(monto = "", desc = "", fecha = hoyISO()) {
+  const t = nuevoMov.tipo, cats = t === "gasto" ? db.perfil.catGasto : db.perfil.catIngreso;
+  const color = t === "gasto" ? "var(--gasto)" : "var(--ingreso)";
+  hoja(`<div class="asa"></div>
+    <div class="hoja-top"><h2>${t === "gasto" ? "Anotar un gasto" : "Anotar lo que te llegó"}</h2><button class="cerrar" data-accion="cerrar" aria-label="Cerrar">✕</button></div>
+    <div class="tipo"><button data-tipo="gasto" class="${t === "gasto" ? "on" : ""}" style="--c:var(--gasto)">Gasté</button><button data-tipo="ingreso" class="${t === "ingreso" ? "on" : ""}" style="--c:var(--ingreso)">Me llegó</button></div>
+    <label class="titulo" for="monto">¿Cuánto?</label>
+    <div class="monto-grande"><span>${esc(moneda()[1])}</span><input id="monto" inputmode="decimal" placeholder="0" value="${esc(monto)}" autocomplete="off"></div>
+    <label class="titulo">${t === "gasto" ? "¿En qué?" : "¿De dónde?"}</label>
+    <div class="chips">${cats.map((c) => `<button class="chip ${c === nuevoMov.categoria ? "on" : ""}" style="--c:${color}" data-elegir="${esc(c)}">${esc(c)}</button>`).join("")}</div>
+    <label class="titulo" for="desc">Nota (opcional)</label>
+    <input id="desc" placeholder="${t === "gasto" ? "Ej. tortillas, gasolina" : "Ej. quincena"}" maxlength="60" value="${esc(desc)}">
+    <label class="titulo" for="fecha">Fecha</label>
+    <input id="fecha" type="date" value="${esc(fecha)}" max="${hoyISO()}">
+    <div style="height:18px"></div>
+    <button class="btn ${t}" data-accion="guardar-mov">Guardar</button>`);
+  setTimeout(() => $("#monto")?.focus(), 250);
+}
+function guardarMov() {
+  const monto = parseFloat($("#monto").value.replace(/,/g, "").replace(/[^\d.]/g, ""));
+  if (!(monto > 0)) { aviso("Escribe cuánto fue"); $("#monto").focus(); return; }
+  const f = $("#fecha").value || hoyISO();
+  const fecha = f === hoyISO() ? new Date().toISOString() : new Date(f + "T12:00:00").toISOString();
+  db.movs.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), tipo: nuevoMov.tipo, monto: r2(monto),
+    categoria: nuevoMov.categoria, descripcion: $("#desc").value.trim(), fecha });
+  guardar(); cerrarHoja();
+  aviso(nuevoMov.tipo === "gasto" ? `Gasto de ${dinero(monto)} anotado` : `Anotado: te llegaron ${dinero(monto)}`);
+  pintarApp();
+}
+
+/* ---------------- borrar un movimiento ---------------- */
+function preguntarBorrar(id) {
+  const m = db.movs.find((x) => x.id === id); if (!m) return;
+  hoja(`<div class="asa"></div><div class="hoja-top"><h2>¿Borrar?</h2><button class="cerrar" data-accion="cerrar">✕</button></div>
+    <p class="sub" style="margin-top:6px">${esc(m.descripcion || m.categoria)} · ${dinero(m.monto)}<br>${nombreDia(m.fecha)}</p>
+    <button class="btn" style="background:var(--peligro);color:#fff" data-borrar="${m.id}">Sí, borrar</button>
+    <div style="height:10px"></div><button class="btn linea" data-accion="cerrar">No, dejarlo</button>`);
+}
+
+/* ---------------- ajustes ---------------- */
+function abrirAjustes() {
+  const p = db.perfil;
+  hoja(`<div class="hoja-top"><h2>Ajustes</h2><button class="cerrar" data-accion="cerrar" aria-label="Cerrar">✕</button></div>
+    <label class="titulo" for="aj-nombre">Tu nombre</label><input id="aj-nombre" value="${esc(p.nombre)}" maxlength="30">
+    <label class="titulo">Moneda</label>
+    ${MONEDAS.map((m) => `<button class="opcion ${m[0] === p.moneda ? "on" : ""}" data-aj-moneda="${m[0]}"><span>${m[2]}</span><small>${m[0]} ${m[1]}</small></button>`).join("")}
+    <label class="titulo">Categorías de gastos</label>${chipsCategorias(SUG_GASTO, p.catGasto, "var(--gasto)", "catGasto")}
+    <label class="titulo">Categorías de lo que te llega</label>${chipsCategorias(SUG_INGRESO, p.catIngreso, "var(--ingreso)", "catIngreso")}
+    <div style="height:26px"></div>
+    <button class="btn linea" data-accion="tutorial">📲 Cómo ponerla en mi pantalla de inicio</button>
+    <div style="height:10px"></div>
+    <button class="btn linea" data-accion="exportar">Descargar mis datos (Excel)</button>
+    <div style="height:30px"></div>
+    <button class="link" style="color:var(--peligro)" data-accion="borrar-todo">Borrar todos mis datos</button>`, true);
+  const n = $("#aj-nombre");
+  n.oninput = () => { if (n.value.trim()) { db.perfil.nombre = n.value.trim(); guardar(); } };
+}
+
+function exportar() {
+  const filas = [["Fecha", "Tipo", "Categoría", "Nota", "Monto"],
+    ...[...db.movs].sort((a, b) => (a.fecha < b.fecha ? -1 : 1)).map((m) => [new Date(m.fecha).toLocaleString("es-MX"), m.tipo === "gasto" ? "Gasto" : "Me llegó", m.categoria, m.descripcion, signo(m)])];
+  const csv = "﻿" + filas.map((f) => f.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  a.download = `mis-finanzas-${hoyISO()}.csv`; a.click();
+}
+
+/* ---------------- hojas ---------------- */
+function hoja(html, completa) {
+  cerrarHoja();
+  const f = document.createElement("div");
+  f.className = "fondo-hoja"; f.id = "fondo-hoja";
+  f.innerHTML = `<div class="hoja ${completa ? "completa" : ""}" role="dialog">${html}</div>`;
+  f.addEventListener("click", (e) => { if (e.target === f) cerrarHoja(); });
+  document.body.appendChild(f);
+}
+function cerrarHoja() { $("#fondo-hoja")?.remove(); }
+
+/* =====================================================================
+   TUTORIAL: crear el acceso directo en la pantalla de inicio
+   ===================================================================== */
+let promptInstalar = null;
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); promptInstalar = e; });
+window.addEventListener("appinstalled", () => {
+  db.tutorial.instalada = true; guardar(); promptInstalar = null;
+  if ($("#tuto")) pasoTutorial(99);
+  if (db.perfil) pintarApp();
+});
+function estaInstalada() {
+  return matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches || navigator.standalone === true;
+}
+function queCelular() {
+  const ua = navigator.userAgent;
+  const ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (/FBAN|FBAV|FB_IAB|Instagram|TikTok|Line\/|Snapchat|musical_ly|BytedanceWebview/i.test(ua)) return "dentro-app";
+  if (ios) return /CriOS|FxiOS|EdgiOS|OPiOS/.test(ua) ? "iphone-otro" : "iphone";
+  if (/SamsungBrowser/.test(ua)) return "samsung";
+  if (/Android/.test(ua)) return /Firefox/.test(ua) ? "android-firefox" : "android";
+  return "compu";
+}
+const icono = `<img src="apple-touch-icon.png" alt="">`;
+const menuChrome = (marcado) => `<div class="dibujo"><div class="menu-falso">
+    <div>➕ Nueva pestaña</div><div>🕘 Historial</div><div>⬇️ Descargas</div><div>↗️ Compartir…</div>
+    <div class="marca">📲 ${marcado}</div><div>⚙️ Configuración</div></div></div>`;
+
+function pasosTutorial() {
+  const c = queCelular();
+  const nombre = esc(db.perfil?.nombre.split(" ")[0] || "");
+  const final = { titulo: "¡Listo! 🎉", texto: `Busca este ícono en la pantalla de tu celular. Desde ahí la vas a abrir siempre, como cualquier app.`, dibujo: `<div class="icono-final">${icono}Mis Finanzas</div>`, boton: "Entendido" };
+  if (c === "android" || c === "android-firefox") return [
+    { titulo: "Ponla en tu pantalla de inicio", texto: `${nombre ? nombre + ", así" : "Así"} la vas a abrir con un solo toque, como WhatsApp. Te enseño, son 3 pasos.`, instalar: true, boton: "Empezar paso a paso" },
+    { titulo: "Toca los 3 puntitos", texto: `Arriba a la derecha de tu pantalla hay 3 puntitos <span class="tecla">⋮</span> (donde apunta la flecha amarilla). Tócalos.`, flecha: "arriba-der", boton: "Ya los toqué" },
+    { titulo: "Toca “Agregar a la pantalla principal”", texto: `Se abrió un menú. Busca la opción que dice <b>“Agregar a la pantalla principal”</b> o <b>“Instalar aplicación”</b> y tócala. Si no la ves, desliza el menú hacia abajo.`, dibujo: menuChrome("Agregar a la pantalla principal"), boton: "Ya la toqué" },
+    { titulo: "Toca “Instalar” o “Agregar”", texto: `Te va a preguntar si la quieres agregar. Toca <b>“Instalar”</b> o <b>“Agregar”</b>.`, dibujo: `<div class="dibujo"><div class="dialogo-falso"><div class="t">${icono}Mis Finanzas</div><div class="bs"><span>Cancelar</span><span class="marca">Instalar</span></div></div></div>`, boton: "Ya lo hice" },
+    final,
+  ];
+  if (c === "samsung") return [
+    { titulo: "Ponla en tu pantalla de inicio", texto: "Así la abres con un solo toque. Te enseño, son 3 pasos.", instalar: true, boton: "Empezar paso a paso" },
+    { titulo: "Toca las 3 rayitas", texto: `Abajo a la derecha hay un botón con 3 rayitas <span class="tecla">≡</span> (donde apunta la flecha). Tócalo.`, flecha: "abajo-der", boton: "Ya lo toqué" },
+    { titulo: "Toca “Agregar página a”", texto: `En el menú, toca <b>“Agregar página a”</b> y luego <b>“Pantalla de inicio”</b>.`, dibujo: `<div class="dibujo"><div class="menu-falso"><div>⭐ Agregar a favoritos</div><div class="marca">➕ Agregar página a</div><div>🖨️ Imprimir</div></div></div>`, boton: "Ya lo hice" },
+    { titulo: "Toca “Agregar”", texto: `Te pregunta si la quieres agregar. Toca <b>“Agregar”</b>.`, dibujo: `<div class="dibujo"><div class="dialogo-falso"><div class="t">${icono}Mis Finanzas</div><div class="bs"><span>Cancelar</span><span class="marca">Agregar</span></div></div></div>`, boton: "Ya lo hice" },
+    final,
+  ];
+  if (c === "iphone") return [
+    { titulo: "Ponla en tu pantalla de inicio", texto: `${nombre ? nombre + ", así" : "Así"} la abres con un solo toque, como WhatsApp. Te enseño, son 3 pasos.`, boton: "Empezar" },
+    { titulo: "Toca el botón de compartir", texto: `Abajo hay un botón de un cuadrito con una flecha hacia arriba <span class="tecla">⬆︎</span> (donde apunta la flecha amarilla). Tócalo.<br><small style="color:#777">Si no lo ves, toca primero los 3 puntitos <span class="tecla">⋯</span> de abajo a la derecha y luego “Compartir”.</small>`, flecha: "abajo-centro", boton: "Ya lo toqué" },
+    { titulo: "Toca “Agregar a inicio”", texto: `Desliza el menú hacia arriba y busca <b>“Agregar a inicio”</b> (tiene un cuadrito con un <b>+</b>). Tócalo.`, dibujo: `<div class="dibujo"><div class="menu-falso"><div>📋 Copiar</div><div>📖 Agregar a la lista de lectura</div><div class="marca">➕ Agregar a inicio</div><div>🔖 Agregar marcador</div></div></div>`, boton: "Ya lo toqué" },
+    { titulo: "Toca “Agregar”", texto: `Arriba a la derecha toca <b>“Agregar”</b>.`, dibujo: `<div class="dibujo"><div class="dialogo-falso"><div class="t">${icono}Mis Finanzas</div><div class="bs"><span>Cancelar</span><span class="marca">Agregar</span></div></div></div>`, boton: "Ya lo hice" },
+    final,
+  ];
+  if (c === "iphone-otro") return [
+    { titulo: "Ábrela en Safari", texto: `Para ponerla en tu pantalla, abre este link en <b>Safari</b> (el ícono de la brújula 🧭).<br><br>Copia el link con el botón de abajo, abre Safari y pégalo arriba.`, copiar: true, boton: "Listo" },
+  ];
+  if (c === "dentro-app") return [
+    { titulo: "Ábrela en tu navegador", texto: `Abriste el link dentro de otra app. Toca los 3 puntitos <span class="tecla">⋮</span> o <span class="tecla">⋯</span> arriba a la derecha y elige <b>“Abrir en Chrome”</b>, <b>“Abrir en el navegador”</b> o <b>“Abrir en Safari”</b>.<br><br>Ahí te enseño a ponerla en tu pantalla.`, flecha: "arriba-der", boton: "Entendido" },
+  ];
+  return [
+    { titulo: "Mejor en tu celular", texto: `Mis Finanzas está pensada para el celular. Manda este link a tu celular (por WhatsApp, por ejemplo) y ábrelo ahí. Te voy a enseñar a ponerla en tu pantalla.`, copiar: true, boton: "Entendido" },
+  ];
+}
+
+let tutoPaso = 0;
+function abrirTutorial() { cerrarHoja(); tutoPaso = 0; pasoTutorial(0); }
+function cerrarTutorial(visto = true) {
+  $("#tuto")?.remove(); document.querySelectorAll(".flecha,.circulo,.letrero").forEach((x) => x.remove());
+  if (visto) { db.tutorial.visto = true; guardar(); }
+  if (db.perfil) pintarApp();
+}
+function pasoTutorial(i) {
+  const pasos = pasosTutorial();
+  if (i === 99) i = pasos.length - 1;
+  tutoPaso = i;
+  const p = pasos[i];
+  $("#tuto")?.remove(); document.querySelectorAll(".flecha,.circulo,.letrero").forEach((x) => x.remove());
+  const t = document.createElement("div");
+  t.className = "tuto" + (p.flecha && p.flecha.startsWith("abajo") ? " arriba-card" : "");
+  t.id = "tuto";
+  const total = pasos.length > 2 ? pasos.length - 2 : 0;    // sin contar la portada ni el "listo"
+  const contador = total && i > 0 && i < pasos.length - 1 ? `<div class="pasito">Paso ${i} de ${total}</div>` : "";
+  const unToque = p.instalar && promptInstalar
+    ? `<button class="btn amarillo" data-tuto="instalar">📲 Instalar con un toque</button><div style="height:10px"></div>` : "";
+  t.innerHTML = `<div class="tarjeta">${contador}<h2>${p.titulo}</h2>${p.dibujo || ""}<p>${p.texto}</p>
+    ${p.copiar ? `<button class="btn linea" data-tuto="copiar">Copiar link</button><div style="height:10px"></div>` : ""}
+    ${unToque}
+    <div class="fila-btn">${i > 0 && i < pasos.length - 1 ? `<button class="btn linea" data-tuto="atras">Atrás</button>` : ""}<button class="btn" data-tuto="siguiente">${p.boton}</button></div>
+    ${i < pasos.length - 1 ? `<button class="saltar" data-tuto="despues">Ahora no</button>` : ""}</div>`;
+  document.body.appendChild(t);
+  if (p.flecha) {
+    const f = document.createElement("div");
+    f.className = "flecha " + p.flecha; f.textContent = p.flecha.startsWith("arriba") ? "⬆" : "⬇";
+    const c = document.createElement("div"); c.className = "circulo " + p.flecha;
+    const l = document.createElement("div"); l.className = "letrero " + p.flecha;
+    l.textContent = p.flecha.startsWith("arriba") ? "Aquí arriba" : "Aquí abajo";
+    document.body.append(c, f, l);
+  }
+}
+async function accionTutorial(a) {
+  const pasos = pasosTutorial();
+  if (a === "siguiente") { if (tutoPaso >= pasos.length - 1) { if (pasos.length > 1 && pasos[pasos.length - 1].titulo.startsWith("¡Listo")) { db.tutorial.instalada = true; } cerrarTutorial(); } else pasoTutorial(tutoPaso + 1); }
+  else if (a === "atras") pasoTutorial(Math.max(0, tutoPaso - 1));
+  else if (a === "despues") { cerrarTutorial(true); aviso("Cuando quieras, está en ⚙️ Ajustes"); }
+  else if (a === "copiar") {
+    const url = location.href.split("#")[0];
+    try { await navigator.clipboard.writeText(url); aviso("Link copiado"); } catch (e) { prompt("Copia este link:", url); }
+  } else if (a === "instalar" && promptInstalar) {
+    promptInstalar.prompt();
+    const r = await promptInstalar.userChoice.catch(() => ({ outcome: "dismissed" }));
+    promptInstalar = null;
+    if (r.outcome === "accepted") { db.tutorial.instalada = true; guardar(); pasoTutorial(99); }
+    else pasoTutorial(tutoPaso);
+  }
+}
+
+/* =====================================================================
+   EVENTOS
+   ===================================================================== */
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  const d = b.dataset;
+  // tutorial
+  if (d.tuto) return accionTutorial(d.tuto);
+  // bienvenida
+  if (!db.perfil) {
+    if (b.id === "seguir") { if (conf.paso < 3) { conf.paso++; pintarBienvenida(); } else terminarBienvenida(); return; }
+    if (b.id === "atras") { conf.paso--; pintarBienvenida(); return; }
+    if (d.moneda) { conf.moneda = d.moneda; pintarBienvenida(); return; }
+  }
+  if (d.cat) {
+    const lista = d.lista === "gastos" || d.lista === "ingresos" ? conf[d.lista] : db.perfil[d.lista];
+    const i = lista.indexOf(d.cat);
+    if (i >= 0) { if (lista.length > 1) lista.splice(i, 1); else return aviso("Deja al menos una"); } else lista.push(d.cat);
+    if (db.perfil && (d.lista === "catGasto" || d.lista === "catIngreso")) { guardar(); b.classList.toggle("on"); return; }
+    return pintarBienvenida();
+  }
+  if (d.agregar) {
+    const inp = document.querySelector(`[data-nueva="${d.agregar}"]`), v = inp.value.trim();
+    if (!v) return;
+    const lista = d.agregar === "gastos" || d.agregar === "ingresos" ? conf[d.agregar] : db.perfil[d.agregar];
+    if (!lista.some((x) => x.toLowerCase() === v.toLowerCase())) lista.push(v);
+    if (db.perfil && (d.agregar === "catGasto" || d.agregar === "catIngreso")) { guardar(); return abrirAjustes(); }
+    return pintarBienvenida();
+  }
+  // app
+  if (d.tab) { ui.tab = d.tab; return pintarApp(); }
+  if (d.periodo) { ui.periodo = d.periodo; return pintarApp(); }
+  if (d.agregarTipo) return abrirAgregar(d.agregarTipo);
+  if (d.tipo) { const m = $("#monto").value, ds = $("#desc").value, f = $("#fecha").value; abrirAgregar(d.tipo); return pintarAgregar(m, ds, f); }
+  if (d.elegir) { nuevoMov.categoria = d.elegir; document.querySelectorAll("[data-elegir]").forEach((x) => x.classList.toggle("on", x === b)); return; }
+  if (d.mov) return preguntarBorrar(d.mov);
+  if (d.borrar) { db.movs = db.movs.filter((m) => m.id !== d.borrar); guardar(); cerrarHoja(); aviso("Borrado"); return pintarApp(); }
+  if (d.ajMoneda) { db.perfil.moneda = d.ajMoneda; guardar(); document.querySelectorAll("[data-aj-moneda]").forEach((x) => x.classList.toggle("on", x === b)); return; }
+  switch (d.accion) {
+    case "guardar-mov": return guardarMov();
+    case "cerrar": cerrarHoja(); return pintarApp();
+    case "ajustes": return abrirAjustes();
+    case "tutorial": return abrirTutorial();
+    case "exportar": return exportar();
+    case "borrar-todo":
+      if (confirm("¿Seguro? Se borra todo lo que has anotado en este celular. No se puede deshacer.")) {
+        localStorage.removeItem(CLAVE); db = nuevo(); Object.assign(conf, { paso: 0, nombre: "", moneda: "MXN", saldo: "", gastos: [...INI_GASTO], ingresos: [...INI_INGRESO] });
+        cerrarHoja(); pintarBienvenida();
+      }
+      return;
+  }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") { if ($("#tuto")) cerrarTutorial(); else if ($("#fondo-hoja")) { cerrarHoja(); pintarApp(); } }
+  if (e.key === "Enter" && e.target.id === "monto") guardarMov();
+  if (e.key === "Enter" && e.target.dataset.nueva) document.querySelector(`[data-agregar="${e.target.dataset.nueva}"]`).click();
+});
+
+/* ---------------- arranque ---------------- */
+if (db.perfil) pintarApp(); else pintarBienvenida();
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
