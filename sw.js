@@ -1,5 +1,5 @@
 // Guarda la app en el celular para que abra rápido y funcione sin internet.
-const VERSION = "mis-finanzas-v2";
+const VERSION = "mis-finanzas-v4";
 const ARCHIVOS = ["./", "./index.html", "./manifest.json", "./icono-192.png", "./icono-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", (e) => {

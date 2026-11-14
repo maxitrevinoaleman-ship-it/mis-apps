@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#1E1E1C">
 <meta name="description" content="Anota lo que gastas y lo que ganas, y mira a dónde se va tu dinero.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -18,15 +18,17 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --negro:#000; --panel:#0e0e0e; --panel-2:#181818; --linea:#2a2a2a; --linea-2:#1c1c1c;
-    --texto:#f5f5f2; --texto-2:#bdbdb7; --suave:#8a8a84;
-    --ingreso:#3987e5; --gasto:#d95926; --peligro:#ff6b6b; --ok:#3ddc97; --aviso:#ffd23f;
+    --negro:#1E1E1C; --panel:#262624; --panel-2:#302F2B; --linea:#3D3B36; --linea-2:#2E2D2A;
+    /* Paleta del video: Charcoal + Sand, y Electric Blue SOLO para los botones principales */
+    --acento:#3A77FD; --tinta:#1E1E1C;
+    --texto:#F3EEE3; --texto-2:#D8CBB3; --suave:#9E9686;
+    --ingreso:#D8CBB3; --gasto:#D2693F; --peligro:#ff6b6b; --ok:#3ddc97; --aviso:#ffd23f;
     --serif:"Newsreader",Georgia,"Times New Roman",serif;
     --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
     --abajo:env(safe-area-inset-bottom,0px); --arriba:env(safe-area-inset-top,0px);
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html,body{background:var(--negro);color:var(--texto)}
+  html,body{color:var(--texto)}
   body{font-family:var(--sans);font-size:17px;line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100vh}
   button,input,select{font:inherit;color:inherit}
   button{cursor:pointer;border:0;background:none}
@@ -36,19 +38,17 @@
   .serif{font-family:var(--serif);font-weight:400}
 
   /* ---------- botones ---------- */
-  .btn{display:block;width:100%;padding:17px 18px;border-radius:14px;background:var(--texto);color:var(--negro);font-weight:700;font-size:18px;text-align:center}
+  .btn{display:block;width:100%;padding:17px 18px;border-radius:14px;background:var(--acento);color:#fff;font-weight:700;font-size:18px;text-align:center}
   .btn:disabled{background:var(--panel-2);color:var(--suave)}
   .btn.linea{background:transparent;color:var(--texto);border:1.5px solid var(--linea)}
-  .btn.gasto{background:var(--gasto);color:#fff}
-  .btn.ingreso{background:var(--ingreso);color:#fff}
-  .btn:active{transform:scale(.985)}
+    .btn:active{transform:scale(.985)}
   .link{color:var(--texto-2);text-decoration:underline;text-underline-offset:3px;padding:10px;font-size:16px}
   input,select{width:100%;background:var(--panel);border:1.5px solid var(--linea);border-radius:12px;padding:15px 16px;font-size:18px;color-scheme:dark}
   input:focus{outline:none;border-color:var(--texto-2)}
   label.titulo{display:block;font-size:15px;color:var(--texto-2);margin:20px 0 8px;font-weight:600}
   .chips{display:flex;flex-wrap:wrap;gap:9px}
   .chip{padding:11px 16px;border-radius:99px;border:1.5px solid var(--linea);background:var(--panel);font-size:16px;font-weight:500;color:var(--texto-2)}
-  .chip.on{color:#fff;border-color:transparent;background:var(--c,var(--texto))}
+  .chip.on{color:var(--tinta);border-color:transparent;background:var(--c,var(--texto))}
   .chip.on.neutro{color:var(--negro)}
 
   /* ---------- bienvenida ---------- */
@@ -122,12 +122,12 @@
 
   /* ===== ANIMACIÓN 3: MAGNIFICATION — menú de abajo tipo lupa ===== */
   .dock-zona{position:fixed;left:0;right:0;bottom:0;padding:10px 10px calc(12px + var(--abajo));background:linear-gradient(transparent,var(--negro) 35%);z-index:10;display:flex;justify-content:center}
-  .dock{display:flex;align-items:flex-end;gap:4px;background:rgba(22,22,22,.92);border:1px solid var(--linea);border-radius:24px;padding:8px 8px 6px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);touch-action:none;max-width:480px;width:100%}
+  .dock{display:flex;align-items:flex-end;gap:4px;background:rgba(38,38,36,.92);border:1px solid var(--linea);border-radius:24px;padding:8px 8px 6px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);touch-action:none;max-width:480px;width:100%}
   .dock button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;color:var(--suave);font-size:12.5px;font-weight:600;transform-origin:50% 100%;transition:transform .14s ease-out,color .2s}
   .dock button .ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:22px;background:var(--panel-2);border:1px solid var(--linea)}
   .dock button.on{color:var(--texto)}
   .dock button.on .ic{background:var(--texto);color:var(--negro);border-color:var(--texto)}
-  .dock button.anotar .ic{width:56px;height:56px;border-radius:18px;font-size:30px;font-weight:700;background:var(--ingreso);color:#fff;border:0;box-shadow:0 6px 20px rgba(57,135,229,.35)}
+  .dock button.anotar .ic{width:56px;height:56px;border-radius:18px;font-size:30px;font-weight:700;background:var(--acento);color:#fff;border:0;box-shadow:0 6px 22px rgba(58,119,253,.45)}
   .dock button.anotar{color:var(--texto)}
 
   /* ---------- hojas (agregar / ajustes) ---------- */
@@ -140,11 +140,29 @@
   .cerrar{width:44px;height:44px;border-radius:50%;background:var(--panel-2);font-size:22px;display:grid;place-items:center}
   .tipo{display:flex;background:var(--panel-2);border-radius:12px;padding:4px;margin:6px 0 16px}
   .tipo button{flex:1;padding:12px;border-radius:9px;font-weight:700;font-size:17px;color:var(--suave)}
-  .tipo button.on{background:var(--c);color:#fff}
+  .tipo button.on{background:var(--c);color:var(--tinta)}
   .monto-grande{display:flex;align-items:center;border-bottom:2px solid var(--linea);padding:6px 0;margin-bottom:6px}
   .monto-grande span{font-family:var(--serif);font-size:40px;color:var(--texto-2);margin-right:6px}
   .monto-grande input{border:0;background:none;font-family:var(--serif);font-size:48px;padding:0;width:100%}
   .monto-grande input:focus{outline:none}
+
+  /* ===== DIFUMINADO: luces borrosas de fondo (arena + azul eléctrico) ===== */
+  body::before,body::after{content:"";position:fixed;z-index:-1;border-radius:50%;pointer-events:none;filter:blur(70px)}
+  body::before{width:340px;height:340px;top:-120px;right:-110px;background:rgba(58,119,253,.55)}
+  body::after{width:380px;height:380px;top:180px;left:-170px;background:rgba(216,203,179,.30)}
+  html{background:var(--negro)} body{background:transparent;position:relative;isolation:isolate}
+  /* tarjeta del saldo con degradado */
+  header.saldo{position:relative;overflow:hidden;padding:20px 20px 22px;border-radius:24px;border:1px solid rgba(216,203,179,.28);
+    background:linear-gradient(140deg,rgba(216,203,179,.30) 0%,rgba(216,203,179,.08) 45%,rgba(58,119,253,.30) 100%);
+    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 18px 50px rgba(0,0,0,.35)}
+  header.saldo::after{content:"";position:absolute;width:200px;height:200px;right:-60px;bottom:-90px;border-radius:50%;background:var(--acento);filter:blur(60px);opacity:.55;pointer-events:none}
+  header.saldo>*{position:relative;z-index:1}
+  header.saldo small{color:var(--texto-2)}
+  /* tarjetas tipo vidrio: se ve el difuminado atrás */
+  .bloque,.banner{background:rgba(38,38,36,.62);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-color:rgba(216,203,179,.14)}
+  .tabs{background:rgba(30,30,28,.7);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .dock-zona{background:linear-gradient(transparent,rgba(30,30,28,.85) 40%)}
+  .periodos button.on{background:var(--texto-2);border-color:var(--texto-2);color:var(--tinta)}
   @keyframes aparece{from{opacity:0}}
   @keyframes sube{from{transform:translateY(40px);opacity:.5}}
 
@@ -178,13 +196,13 @@
   /* ---------- tutorial para crear el acceso directo ---------- */
   .tuto{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;flex-direction:column;justify-content:flex-end;padding:0 16px calc(18px + var(--abajo));animation:aparece .25s}
   .tuto.arriba-card{justify-content:center}
-  .tuto .tarjeta{background:#fff;color:#111;border-radius:22px;padding:22px 20px 18px;max-width:520px;width:100%;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  .tuto .tarjeta{background:#F3EEE3;color:#1E1E1C;border-radius:22px;padding:22px 20px 18px;max-width:520px;width:100%;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.6)}
   .tuto .pasito{font-size:14px;font-weight:700;color:#6b6b6b;margin-bottom:6px}
   .tuto h2{font-size:25px;line-height:1.2;margin-bottom:10px;font-weight:700}
   .tuto p{font-size:18px;color:#333;margin-bottom:14px;line-height:1.45}
-  .tuto .btn{background:#111;color:#fff}
+  .tuto .btn{background:var(--acento);color:#fff}
   .tuto .btn.amarillo{background:var(--aviso);color:#111}
-  .tuto .btn.linea{border-color:#ddd;color:#333;background:#fff}
+  .tuto .btn.linea{border-color:#D8CBB3;color:#1E1E1C;background:transparent}
   .tuto .fila-btn{display:flex;gap:10px;margin-top:6px}
   .tuto .fila-btn .btn{flex:1}
   .tuto .saltar{display:block;margin:10px auto 0;color:#777;font-size:15px;padding:8px}
