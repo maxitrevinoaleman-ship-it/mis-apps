@@ -1,0 +1,9 @@
+<resources>
+    <color name="fondo">#000000</color>
+    <color name="icono_fondo">#000000</color>
+    <style name="Tema" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/fondo</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>
