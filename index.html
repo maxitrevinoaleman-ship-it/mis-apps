@@ -70,7 +70,8 @@
   .agregar-cat button{padding:0 16px;border-radius:12px;border:1.5px solid var(--linea);font-weight:600}
 
   /* ---------- app ---------- */
-  .app{max-width:640px;margin:auto;padding:calc(18px + var(--arriba)) 18px calc(120px + var(--abajo))}
+  .app{max-width:640px;margin:auto;padding:calc(18px + var(--arriba)) 18px calc(130px + var(--abajo))}
+  .seccion-titulo{font-family:var(--serif);font-weight:400;font-size:26px;margin:22px 0 12px}
   .banner{display:flex;align-items:center;gap:12px;background:var(--panel-2);border:1px solid var(--linea);border-radius:14px;padding:12px 14px;margin-bottom:16px;width:100%;text-align:left}
   .banner b{display:block;font-size:16px}
   .banner span{color:var(--texto-2);font-size:14px}
@@ -119,12 +120,18 @@
   .total{display:flex;justify-content:space-between;padding:16px 4px 4px;font-weight:700;font-size:18px}
   .dia{font-size:14px;color:var(--suave);font-weight:600;margin:16px 4px 2px}
 
-  /* barra de abajo con los dos botones grandes */
-  .acciones{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(14px + var(--abajo));background:linear-gradient(transparent,var(--negro) 30%);display:flex;gap:10px;justify-content:center;z-index:10}
-  .acciones .btn{max-width:300px;padding:16px 10px;font-size:18px}
+  /* ===== ANIMACIÓN 3: MAGNIFICATION — menú de abajo tipo lupa ===== */
+  .dock-zona{position:fixed;left:0;right:0;bottom:0;padding:10px 10px calc(12px + var(--abajo));background:linear-gradient(transparent,var(--negro) 35%);z-index:10;display:flex;justify-content:center}
+  .dock{display:flex;align-items:flex-end;gap:4px;background:rgba(22,22,22,.92);border:1px solid var(--linea);border-radius:24px;padding:8px 8px 6px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);touch-action:none;max-width:480px;width:100%}
+  .dock button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;color:var(--suave);font-size:12.5px;font-weight:600;transform-origin:50% 100%;transition:transform .14s ease-out,color .2s}
+  .dock button .ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:22px;background:var(--panel-2);border:1px solid var(--linea)}
+  .dock button.on{color:var(--texto)}
+  .dock button.on .ic{background:var(--texto);color:var(--negro);border-color:var(--texto)}
+  .dock button.anotar .ic{width:56px;height:56px;border-radius:18px;font-size:30px;font-weight:700;background:var(--ingreso);color:#fff;border:0;box-shadow:0 6px 20px rgba(57,135,229,.35)}
+  .dock button.anotar{color:var(--texto)}
 
   /* ---------- hojas (agregar / ajustes) ---------- */
-  .fondo-hoja{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:30;display:flex;align-items:flex-end;justify-content:center;animation:aparece .2s}
+  .fondo-hoja{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);z-index:40;display:flex;align-items:flex-end;justify-content:center;animation:aparece .2s}
   .hoja{width:100%;max-width:640px;max-height:94vh;overflow-y:auto;background:var(--panel);border:1px solid var(--linea);border-bottom:0;border-radius:22px 22px 0 0;padding:10px 20px calc(22px + var(--abajo));animation:sube .25s ease-out}
   .hoja.completa{max-height:100vh;height:100vh;border-radius:0;padding-top:calc(14px + var(--arriba))}
   .asa{width:44px;height:5px;border-radius:9px;background:var(--linea);margin:4px auto 14px}
@@ -141,11 +148,35 @@
   @keyframes aparece{from{opacity:0}}
   @keyframes sube{from{transform:translateY(40px);opacity:.5}}
 
-  .aviso{position:fixed;left:50%;bottom:calc(100px + var(--abajo));transform:translate(-50%,30px);opacity:0;background:var(--texto);color:var(--negro);padding:12px 18px;border-radius:12px;font-weight:600;font-size:16px;transition:.25s;z-index:60;pointer-events:none;max-width:90%;text-align:center}
+  /* ===== ANIMACIÓN 1: CROSSFADE — lo viejo se desvanece mientras entra lo nuevo ===== */
+  ::view-transition-old(root),::view-transition-new(root){animation-duration:.32s;animation-timing-function:ease}
+  .crossfade{animation:crossfade .32s ease}
+  @keyframes crossfade{from{opacity:0}}
+  /* ===== ANIMACIÓN 2: SHARED ELEMENT — el título viaja de la tarjeta a la página ===== */
+  ::view-transition-group(mov-titulo),::view-transition-group(mov-monto),::view-transition-group(mov-tarjeta){animation-duration:.42s;animation-timing-function:cubic-bezier(.2,.8,.2,1)}
+  .detalle{position:fixed;inset:0;z-index:35;background:var(--negro);overflow-y:auto;padding:calc(16px + var(--arriba)) 20px calc(30px + var(--abajo))}
+  .detalle .volver{display:flex;align-items:center;gap:6px;color:var(--texto-2);font-size:17px;font-weight:600;padding:8px 0 18px}
+  .detalle .tarjeta-det{background:var(--panel);border:1px solid var(--linea);border-radius:20px;padding:22px}
+  .detalle .det-cat{color:var(--suave);font-size:15px;margin-bottom:6px}
+  .detalle .det-titulo{font-family:var(--serif);font-size:32px;line-height:1.15;margin-bottom:16px;display:inline-block}
+  .detalle .det-monto{font-family:var(--serif);font-size:52px;line-height:1;display:inline-block}
+  .detalle .det-filas{margin-top:20px;border-top:1px solid var(--linea)}
+  .detalle .det-filas div{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--linea-2);font-size:17px}
+  .detalle .det-filas span:first-child{color:var(--suave)}
+  .mov b,.mov .m{display:inline-block}
+  /* ===== ANIMACIÓN 4: BLUR — todo borroso menos lo que importa ===== */
+  .enfocable > *,.libro tr{transition:filter .35s ease,opacity .35s ease}
+  .enfocable.enfoque > *:not(.activa),.libro.enfoque tr:not(.activa){filter:blur(4px);opacity:.45}
+  .cat .extra{max-height:0;overflow:hidden;color:var(--texto-2);font-size:14px;transition:max-height .3s ease,margin .3s ease}
+  .cat.activa .extra{max-height:40px;margin-top:8px}
+  .libro tr,.cat{cursor:pointer}
+  @media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}.crossfade{animation:none}}
+
+  .aviso{position:fixed;left:50%;bottom:calc(120px + var(--abajo));transform:translate(-50%,30px);opacity:0;background:var(--texto);color:var(--negro);padding:12px 18px;border-radius:12px;font-weight:600;font-size:16px;transition:.25s;z-index:60;pointer-events:none;max-width:90%;text-align:center}
   .aviso.ver{transform:translate(-50%,0);opacity:1}
 
   /* ---------- tutorial para crear el acceso directo ---------- */
-  .tuto{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.86);display:flex;flex-direction:column;justify-content:flex-end;padding:0 16px calc(18px + var(--abajo));animation:aparece .25s}
+  .tuto{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;flex-direction:column;justify-content:flex-end;padding:0 16px calc(18px + var(--abajo));animation:aparece .25s}
   .tuto.arriba-card{justify-content:center}
   .tuto .tarjeta{background:#fff;color:#111;border-radius:22px;padding:22px 20px 18px;max-width:520px;width:100%;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.6)}
   .tuto .pasito{font-size:14px;font-weight:700;color:#6b6b6b;margin-bottom:6px}
@@ -213,6 +244,13 @@ const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "o
 const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
 
 const $ = (s) => document.querySelector(s);
+const sinMovimiento = matchMedia("(prefers-reduced-motion: reduce)").matches;
+/** Cambia la pantalla con View Transitions (crossfade / elemento compartido) si el celular lo soporta. */
+function transicion(cambio) {
+  if (document.startViewTransition && !sinMovimiento) return document.startViewTransition(cambio);
+  cambio();
+  return null;
+}
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 /* ---------------- datos ---------------- */
@@ -363,49 +401,69 @@ function pintarApp() {
     <header class="saldo">
       <div><div class="hola">Hola, ${nombre}</div><small>Tienes</small>
         <div class="cifra num">${r.total < 0 ? "−" : ""}<sup>${esc(m[1])}</sup>${fmt.format(Math.abs(r.total))}</div></div>
-      <button class="engrane" data-accion="ajustes" aria-label="Ajustes">⚙️</button>
     </header>
-    <nav class="tabs">
-      <button data-tab="resumen" class="${ui.tab === "resumen" ? "on" : ""}">Resumen</button>
-      <button data-tab="gasto" class="${ui.tab === "gasto" ? "on" : ""}" style="--c:var(--gasto)">Gastos</button>
-      <button data-tab="ingreso" class="${ui.tab === "ingreso" ? "on" : ""}" style="--c:var(--ingreso)">Ganancias</button>
-    </nav>
+    <h2 class="seccion-titulo">${{ resumen: "Resumen", gasto: "Lo que gastaste", ingreso: "Lo que te llegó" }[ui.tab]}</h2>
     <div class="periodos">${PERIODOS.map(([k, t]) => `<button data-periodo="${k}" class="${ui.periodo === k ? "on" : ""}">${t}</button>`).join("")}</div>
-    ${contenido}
+    <div id="contenido">${contenido}</div>
   </div>
-  <div class="acciones">
-    <button class="btn gasto" data-agregar-tipo="gasto">− Gasté</button>
-    <button class="btn ingreso" data-agregar-tipo="ingreso">+ Me llegó</button>
-  </div>`;
+  <div class="dock-zona"><nav class="dock" id="dock" aria-label="Menú">
+    <button data-tab="resumen" class="${ui.tab === "resumen" ? "on" : ""}"><span class="ic">📊</span>Resumen</button>
+    <button data-tab="gasto" class="${ui.tab === "gasto" ? "on" : ""}"><span class="ic">🧾</span>Gastos</button>
+    <button class="anotar" data-agregar-tipo="${ui.tab === "ingreso" ? "ingreso" : "gasto"}" aria-label="Anotar"><span class="ic">＋</span>Anotar</button>
+    <button data-tab="ingreso" class="${ui.tab === "ingreso" ? "on" : ""}"><span class="ic">💵</span>Me llegó</button>
+    <button data-accion="ajustes"><span class="ic">⚙️</span>Ajustes</button>
+  </nav></div>`;
+  activarLupa();
+}
+
+/* ===== ANIMACIÓN 3: MAGNIFICATION — el ícono más cerca del dedo crece, los vecinos un poco ===== */
+function activarLupa() {
+  const dock = $("#dock"); if (!dock || sinMovimiento) return;
+  const botones = [...dock.querySelectorAll("button")];
+  const aumentar = (x) => botones.forEach((b) => {
+    const r = b.getBoundingClientRect(), d = Math.abs(x - (r.left + r.width / 2));
+    const k = 1 + 0.42 * Math.max(0, 1 - d / 110);
+    b.style.transform = `translateY(${-(k - 1) * 26}px) scale(${k})`;
+  });
+  const normal = () => botones.forEach((b) => (b.style.transform = ""));
+  dock.addEventListener("pointermove", (e) => aumentar(e.clientX));
+  dock.addEventListener("pointerdown", (e) => aumentar(e.clientX));
+  dock.addEventListener("pointerleave", normal);
+  dock.addEventListener("pointerup", () => setTimeout(normal, 160));
+  dock.addEventListener("pointercancel", normal);
 }
 
 function vistaResumen(r) {
   const etiqueta = PERIODOS.find((p) => p[0] === ui.periodo)[1];
   if (!db.movs.length) {
-    return `<div class="bloque"><h3>Aún no anotas nada</h3><p class="nota" style="margin:8px 0 0;font-size:16px">Cuando gastes, toca <b>“− Gasté”</b>. Cuando te llegue dinero, toca <b>“+ Me llegó”</b>. Están abajo.</p></div>`;
+    return `<div class="bloque"><h3>Aún no anotas nada</h3><p class="nota" style="margin:8px 0 0;font-size:16px">Cuando gastes o te llegue dinero, toca el botón azul <b>＋ Anotar</b> de abajo.</p></div>`;
   }
   const balance = r2(r.ingresos - r.gastos);
   return `<div class="bloque">
       <h3>${etiqueta}</h3><p class="nota">Cómo se movió tu dinero</p>
-      <table class="libro num">
-        <tr><td class="c">Tenías</td><td>${dinero(r.inicial)}</td></tr>
-        <tr><td class="c"><span class="m" style="background:var(--ingreso)"></span>Te llegó</td><td>+${dinero(r.ingresos)}</td></tr>
-        <tr><td class="c"><span class="m" style="background:var(--gasto)"></span>Gastaste</td><td>−${dinero(r.gastos)}</td></tr>
-        <tr class="cierre"><td>Te queda</td><td>${dinero(r.final)}</td></tr>
+      <table class="libro num" id="libro">
+        <tr data-enfocar><td class="c">Tenías</td><td>${dinero(r.inicial)}</td></tr>
+        <tr data-enfocar><td class="c"><span class="m" style="background:var(--ingreso)"></span>Te llegó</td><td>+${dinero(r.ingresos)}</td></tr>
+        <tr data-enfocar><td class="c"><span class="m" style="background:var(--gasto)"></span>Gastaste</td><td>−${dinero(r.gastos)}</td></tr>
+        <tr class="cierre" data-enfocar><td>Te queda</td><td>${dinero(r.final)}</td></tr>
       </table>
       ${r.dentro.length ? `<div class="resultado">${balance >= 0 ? `Vas bien: te sobraron <b>${dinero(balance)}</b>.` : `Ojo: gastaste <b>${dinero(-balance)}</b> más de lo que te llegó.`}</div>` : ""}
     </div>
     <div class="bloque"><h3>Tu dinero día a día</h3><p class="nota">Sube cuando te llega dinero y baja cuando gastas</p>${grafica(r)}
       <div class="leyenda"><span><i style="background:var(--ingreso)"></i>Te llegó</span><span><i style="background:var(--gasto)"></i>Gastaste</span></div></div>
-    <div class="bloque"><h3>¿En qué gastaste?</h3><p class="nota">${etiqueta}</p>${barras(r.catG, "gasto", r.gastos)}</div>
-    <div class="bloque"><h3>¿De dónde te llegó?</h3><p class="nota">${etiqueta}</p>${barras(r.catI, "ingreso", r.ingresos)}</div>`;
+    <div class="bloque"><h3>¿En qué gastaste?</h3><p class="nota">${etiqueta} · toca una para verla de cerca</p>${barras(r.catG, "gasto", r.gastos, r.dentro)}</div>
+    <div class="bloque"><h3>¿De dónde te llegó?</h3><p class="nota">${etiqueta} · toca una para verla de cerca</p>${barras(r.catI, "ingreso", r.ingresos, r.dentro)}</div>`;
 }
 
-function barras(lista, tipo, total) {
+function barras(lista, tipo, total, movs) {
   if (!lista.length) return `<p class="vacio">Nada en este periodo</p>`;
   const max = lista[0][1];
-  return lista.map(([c, m]) => `<div class="cat"><div class="f"><span>${esc(c)}</span><span class="num">${dinero(m)} · ${Math.round((m / total) * 100)}%</span></div>
-    <div class="b"><div style="width:${(m / max) * 100}%;background:var(--${tipo})"></div></div></div>`).join("");
+  return `<div class="enfocable">${lista.map(([c, m]) => {
+    const n = movs.filter((x) => x.tipo === tipo && x.categoria === c).length || 1;
+    return `<div class="cat" data-enfocar><div class="f"><span>${esc(c)}</span><span class="num">${dinero(m)} · ${Math.round((m / total) * 100)}%</span></div>
+    <div class="b"><div style="width:${(m / max) * 100}%;background:var(--${tipo})"></div></div>
+    <div class="extra">${n} ${n === 1 ? "vez" : "veces"} · en promedio ${dinero(r2(m / n))} cada una</div></div>`;
+  }).join("")}</div>`;
 }
 
 function grafica(r) {
@@ -435,19 +493,39 @@ function grafica(r) {
 function vistaLista(tipo, r) {
   const lista = r.dentro.filter((m) => m.tipo === tipo).sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
   const titulo = tipo === "gasto" ? "gastos" : "ganancias";
-  if (!lista.length) return `<div class="bloque"><p class="vacio">No hay ${titulo} en este periodo.<br>Toca <b>${tipo === "gasto" ? "“− Gasté”" : "“+ Me llegó”"}</b> abajo para anotar.</p></div>`;
+  if (!lista.length) return `<div class="bloque"><p class="vacio">No hay ${titulo} en este periodo.<br>Toca <b>＋ Anotar</b> abajo para agregar.</p></div>`;
   let html = "", dia = "";
   for (const m of lista) {
     const d = nombreDia(m.fecha);
     if (d !== dia) { html += `<div class="dia">${d}</div>`; dia = d; }
-    html += `<button class="mov" data-mov="${m.id}"><div class="i"><b>${esc(m.descripcion || m.categoria)}</b><span>${esc(m.categoria)}</span></div>
+    html += `<button class="mov" data-mov="${m.id}"><div class="i"><b class="t">${esc(m.descripcion || m.categoria)}</b><span>${esc(m.categoria)}</span></div>
       <div class="m num ${tipo === "gasto" ? "g" : "n"}">${dinero(m.monto)}</div></button>`;
   }
   const total = r2(lista.reduce((s, m) => s + m.monto, 0));
   return `<div class="bloque" style="padding:6px 14px 14px">${html}
     <div class="total"><span>Total (${lista.length})</span><span class="num">${dinero(total)}</span></div></div>
-    <p class="nota" style="color:var(--suave);font-size:14px;text-align:center">Toca un movimiento si lo quieres borrar.</p>`;
+    <p class="nota" style="color:var(--suave);font-size:14px;text-align:center">Toca uno para ver sus detalles o borrarlo.</p>`;
 }
+
+/* ===== ANIMACIÓN 1: CROSSFADE al cambiar de pestaña o de periodo ===== */
+function cambiarConCrossfade() {
+  if (transicion(pintarApp)) return;                           // el navegador hace el fundido cruzado
+  pintarApp(); $("#contenido")?.classList.add("crossfade");     // respaldo para celulares viejos
+}
+
+/* ===== ANIMACIÓN 4: BLUR — al tocar una fila, lo demás se desenfoca ===== */
+document.addEventListener("click", (e) => {
+  const fila = e.target.closest("[data-enfocar]");
+  const grupo = fila ? fila.closest(".enfocable, .libro") : null;
+  document.querySelectorAll(".enfoque").forEach((g) => {
+    if (g !== grupo) { g.classList.remove("enfoque"); g.querySelectorAll(".activa").forEach((x) => x.classList.remove("activa")); }
+  });
+  if (!fila || !grupo) return;
+  const yaActiva = fila.classList.contains("activa");
+  grupo.querySelectorAll(".activa").forEach((x) => x.classList.remove("activa"));
+  if (yaActiva) { grupo.classList.remove("enfoque"); return; }
+  fila.classList.add("activa"); grupo.classList.add("enfoque");
+});
 
 /* ---------------- agregar movimiento ---------------- */
 const nuevoMov = { tipo: "gasto", categoria: "" };
@@ -485,6 +563,53 @@ function guardarMov() {
   guardar(); cerrarHoja();
   aviso(nuevoMov.tipo === "gasto" ? `Gasto de ${dinero(monto)} anotado` : `Anotado: te llegaron ${dinero(monto)}`);
   pintarApp();
+}
+
+/* ---------------- detalle de un movimiento (ANIMACIÓN 2: SHARED ELEMENT) ---------------- */
+function nombrar(titulo, monto, tarjeta, nombre = true) {
+  if (titulo) titulo.style.viewTransitionName = nombre ? "mov-titulo" : "";
+  if (monto) monto.style.viewTransitionName = nombre ? "mov-monto" : "";
+  if (tarjeta) tarjeta.style.viewTransitionName = nombre ? "mov-tarjeta" : "";
+}
+function abrirDetalle(id, boton) {
+  const m = db.movs.find((x) => x.id === id); if (!m) return;
+  // la tarjeta de la lista y sus textos "viajan" a la página de detalle
+  nombrar(boton.querySelector(".t"), boton.querySelector(".m"), boton);
+  ui.detalle = id;
+  history.pushState({ detalle: id }, "");
+  transicion(() => {
+    nombrar(boton.querySelector(".t"), boton.querySelector(".m"), boton, false);
+    const g = m.tipo === "gasto";
+    const d = document.createElement("div");
+    d.className = "detalle"; d.id = "detalle";
+    d.innerHTML = `<button class="volver" data-accion="cerrar-detalle">← Volver</button>
+      <div class="tarjeta-det" id="det-tarjeta">
+        <div class="det-cat">${g ? "Gasto" : "Te llegó"} · ${esc(m.categoria)}</div>
+        <div class="det-titulo" id="det-titulo">${esc(m.descripcion || m.categoria)}</div><br>
+        <div class="det-monto num" id="det-monto">${g ? "−" : "+"}${dinero(m.monto)}</div>
+        <div class="det-filas">
+          <div><span>Fecha</span><span>${nombreDia(m.fecha)}</span></div>
+          <div><span>Hora</span><span>${new Date(m.fecha).toLocaleTimeString("es-MX", { hour: "numeric", minute: "2-digit" })}</span></div>
+          <div><span>Categoría</span><span>${esc(m.categoria)}</span></div>
+        </div>
+      </div>
+      <div style="height:22px"></div>
+      <button class="btn" style="background:var(--peligro);color:#fff" data-borrar-pedir="${m.id}">Borrar este ${g ? "gasto" : "movimiento"}</button>`;
+    document.body.appendChild(d);
+    nombrar(d.querySelector("#det-titulo"), d.querySelector("#det-monto"), d.querySelector("#det-tarjeta"));
+  });
+}
+function cerrarDetalle() {
+  const d = $("#detalle"); if (!d) return;
+  const id = ui.detalle; ui.detalle = null;
+  const t = transicion(() => {
+    d.remove();
+    pintarApp();
+    const b = document.querySelector(`[data-mov="${id}"]`);
+    if (b) nombrar(b.querySelector(".t"), b.querySelector(".m"), b);
+  });
+  const limpiar = () => document.querySelectorAll(".mov").forEach((b) => nombrar(b.querySelector(".t"), b.querySelector(".m"), b, false));
+  if (t) t.finished.then(limpiar, limpiar); else limpiar();
 }
 
 /* ---------------- borrar un movimiento ---------------- */
@@ -680,17 +805,23 @@ document.addEventListener("click", (e) => {
     return pintarBienvenida();
   }
   // app
-  if (d.tab) { ui.tab = d.tab; return pintarApp(); }
-  if (d.periodo) { ui.periodo = d.periodo; return pintarApp(); }
+  if (d.tab) { if (ui.tab === d.tab) return; ui.tab = d.tab; return cambiarConCrossfade(); }
+  if (d.periodo) { ui.periodo = d.periodo; return cambiarConCrossfade(); }
   if (d.agregarTipo) return abrirAgregar(d.agregarTipo);
   if (d.tipo) { const m = $("#monto").value, ds = $("#desc").value, f = $("#fecha").value; abrirAgregar(d.tipo); return pintarAgregar(m, ds, f); }
   if (d.elegir) { nuevoMov.categoria = d.elegir; document.querySelectorAll("[data-elegir]").forEach((x) => x.classList.toggle("on", x === b)); return; }
-  if (d.mov) return preguntarBorrar(d.mov);
-  if (d.borrar) { db.movs = db.movs.filter((m) => m.id !== d.borrar); guardar(); cerrarHoja(); aviso("Borrado"); return pintarApp(); }
+  if (d.mov) return abrirDetalle(d.mov, b);
+  if (d.borrar) {
+    db.movs = db.movs.filter((m) => m.id !== d.borrar); guardar(); cerrarHoja();
+    if ($("#detalle")) { $("#detalle").remove(); ui.detalle = null; history.back(); }
+    aviso("Borrado"); return transicion(pintarApp);
+  }
+  if (d.borrarPedir) return preguntarBorrar(d.borrarPedir);
   if (d.ajMoneda) { db.perfil.moneda = d.ajMoneda; guardar(); document.querySelectorAll("[data-aj-moneda]").forEach((x) => x.classList.toggle("on", x === b)); return; }
   switch (d.accion) {
     case "guardar-mov": return guardarMov();
-    case "cerrar": cerrarHoja(); return pintarApp();
+    case "cerrar": cerrarHoja(); return ui.detalle ? null : pintarApp();
+    case "cerrar-detalle": return history.back();
     case "ajustes": return abrirAjustes();
     case "tutorial": return abrirTutorial();
     case "exportar": return exportar();
@@ -703,10 +834,13 @@ document.addEventListener("click", (e) => {
   }
 });
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") { if ($("#tuto")) cerrarTutorial(); else if ($("#fondo-hoja")) { cerrarHoja(); pintarApp(); } }
+  if (e.key === "Escape") { if ($("#tuto")) cerrarTutorial(); else if ($("#fondo-hoja")) { cerrarHoja(); if (!ui.detalle) pintarApp(); } else if ($("#detalle")) history.back(); }
   if (e.key === "Enter" && e.target.id === "monto") guardarMov();
   if (e.key === "Enter" && e.target.dataset.nueva) document.querySelector(`[data-agregar="${e.target.dataset.nueva}"]`).click();
 });
+
+/* El botón "atrás" del celular cierra el detalle en vez de salir de la app */
+window.addEventListener("popstate", () => { if ($("#detalle")) cerrarDetalle(); });
 
 /* ---------------- arranque ---------------- */
 if (db.perfil) pintarApp(); else pintarBienvenida();
